@@ -1,0 +1,102 @@
+/// Pnad 2001. Para outros anos, o procedimento é o mesmo, exceto pelo nome da base de dados
+
+use "C:\Users\ana\2001\Dados", clear // lugar do computador em que os dados estão
+
+//para desabilitar o more
+set more off
+
+*unicode translate *.do
+
+gen ano_=v0101 // "traduzindo" a variável com nome dado pelo IBGE para o nome desejado
+gen uf_=uf
+
+gen mulher_=.
+replace mulher_=1 if v0302==4
+replace mulher_=0 if v0302==2
+//tab mulher - usar tab, mean ou qualquer outro comando para obter estatísticas sempre com peso
+gen peso_=v4729
+
+gen rendatrab_=v4739
+replace rendatrab_=. if v4739>1000000
+mean rendatrab_ [fweight = peso]
+
+gen rendatotal=v4721
+replace rendatotal=. if v4721>=1000000
+
+gen ativas_=.
+replace ativas_=1 if v4754==1
+replace ativas_=0 if v4754==2
+
+gen ocup_=. 
+replace ocup_=1 if v4755==1
+replace ocup_=0 if v4755==2
+
+gen cor_=.
+replace cor_=1 if v0404==2
+replace cor_=0 if v0404>=4
+replace cor_=0 if v0404==0
+
+gen idade_=v8005
+mean idade_ [fweight = peso]
+
+gen condfamilia_=v0402
+
+//criando a variável chefe de domicílio
+
+gen chefe_=.
+replace chefe_=1 if v0402==1
+replace chefe_=0 if v0402>1
+mean chefe_ [ fweight = peso ]
+
+gen edu_=v4703
+gen edu2_=edu^edu
+
+gen trabdom_=v9121
+replace trabdom_=0 if v9121==2
+replace trabdom_=1 if v9121==1
+replace trabdom_=0 if v9121==3
+
+gen trabdom_c=v9921
+mean trabdom_c
+
+
+gen filhos_=.
+replace filhos_=0 if v4723==1
+replace filhos_=1 if v4723>=2
+replace filhos_=0 if v4723==10
+
+gen filhos14menos_=.
+replace filhos14menos_=0 if v4723==1
+replace filhos14menos_=0 if v4723==3
+replace filhos14menos_=0 if v4723==5
+replace filhos14menos_=0 if v4723==7
+replace filhos14menos_=0 if v4723>=9
+replace filhos14menos_=1 if v4723==2
+replace filhos14menos_=1 if v4723==4
+replace filhos14menos_=1 if v4723==6
+replace filhos14menos_=1 if v4723==8
+
+gen maefil14menos_=.
+replace maefil14menos_=1 if v4723==6
+replace maefil14menos_=0 if v4723<=5
+replace maefil14menos_=0 if v4723>=7
+
+gen filmas_=v1141
+mean filmas_ [fweight = peso]
+gen filfem_=v1142
+mean filfem_ [fweight = peso]
+
+gen morcas_=v4724
+gen rendapc=rendatotal/morcas_
+
+//Opções para tabular as variáveis por gênero, exemplo com a variável de ocupação: 
+bysort mulher_: tab ocup_ [fweight = peso]
+tab ocup_ mulher_ [fweight = peso]
+//Com três variáveis:
+bysort mulher_: tab ocup_ chefe_ [fweight = peso]
+//ou
+bysort mulher_ chefe_: tab ocup_ ano [fweight = peso]
+
+keep ano_ uf_ mulher_ peso_ rendatrab_ rendatotal rendapc cor_ idade_ condfamilia_ chefe_ edu_ edu2_ trabdom_ trabdom_c filhos_ filhos14menos_ maefil14menos_ filmas_ filfem_ morcas_ ocup_ ativas_ 
+
+save "C:\Users\ana\2001\Dados\teste2019", replace // lugar do computador em que os dados serão salvos
